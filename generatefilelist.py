@@ -12,48 +12,60 @@ args = parser.parse_args()
 configfile = "generate.cfg"
 config = ConfigParser.RawConfigParser()
 
+filelist_dir = ""
+current_filelist = ""
+old_filelist = ""
+
 searchable_dirs = []
 specific_ignores = []
 generic_ignores = []
 
-#-----------------Configurables------------------
-home = os.path.expanduser("~")
-filelist_dir = os.path.join(home,"Documents","dev","python","test","filelist")
-
-#This list contains all paths to be indexed (they should not overlap).
-searchable_dirs.append(os.path.join(home,"Documents","dev"))
-
-#This list contains all specific paths to be ignored.
-specific_ignores.append(os.path.join(home,"Documents","dev","android","android-sdk-macosx"))
-
-#This list contains all generic directories to ignore.
-generic_ignores.append(".git")
-#-----------------Configurables------------------
-
-current_filelist = os.path.join(home,filelist_dir,"all.files")
-old_filelist = os.path.join(home,filelist_dir,"all.files.old")
-
 #Read configuration file
 def parse_configuration():
+	global filelist_dir
+	global searchable_dirs
+	global specific_ignores
+	global generic_ignores
+	global current_filelist
+	global old_filelist
 	if os.path.isfile(configfile):
 		config.read(configfile)
-		print home
+
+		filelist_dir = config.get("filelist", "path")
+		paths = config.items("searchables")
+		for key,path in paths:
+			searchable_dirs.append(path)
+
+		paths = config.items("specificignores")
+		for key,path in paths:
+			specific_ignores.append(path)
+
+		paths = config.items("genericignores")
+		for key,path in paths:
+			generic_ignores.append(path)
+
+		current_filelist = os.path.join(filelist_dir,"all.files")
+		old_filelist = os.path.join(filelist_dir,"all.files.old")
+
+		print current_filelist
 	else:
 		print "No config file found!"
 
 #Clear out old filelist
 def backup_current_list():
 	if os.path.isfile(old_filelist):
-		os.remove(old_filelist)
 		print "Removing old file..."
+		os.remove(old_filelist)
+		
 	if os.path.isfile(current_filelist):
-		os.rename(current_filelist, old_filelist)
 		print "Backing up current file list..."
+		os.rename(current_filelist, old_filelist)
 
 #Create new filelist (empty file)
 def create_new_list():
-	open(current_filelist,'w').close()
 	print "Creating new file list..."
+	with file(current_filelist,'a'):
+		os.utime(current_filelist, None)
 
 #Generate new file list contents
 def generate_list_content():
