@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser(description="Generates a file list.")
 #	help='generate only if current list is older than this many days')
 args = parser.parse_args()
 
-configfile = "generate.cfg"
+configfile = "locate.cfg"
 config = ConfigParser.RawConfigParser()
 
 filelist_dir = ""

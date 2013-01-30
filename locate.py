@@ -4,11 +4,11 @@ import ConfigParser
 import argparse
 import os
 
-parser = argparse.ArgumentParser(description="Locates a given file/directory from a file list.")
+parser = argparse.ArgumentParser(description="Locates a given file/directory from a file list, as defined in generate.cfg.")
 parser.add_argument("target",metavar="[name]",nargs=1,help='file/directory name to be found')
 args = parser.parse_args()
 
-configfile = "generate.cfg"
+configfile = "locate.cfg"
 config = ConfigParser.RawConfigParser()
 
 #Check if file list exists
