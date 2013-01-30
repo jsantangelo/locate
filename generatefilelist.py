@@ -78,11 +78,12 @@ def generate_list_content():
 					else:
 						mylist.write(os.path.join(root,directory) + '\n')
 				for filename in files:
-					mylist.write(os.path.join(root,directory,filename) + '\n')
+					if not is_specifically_ignored(os.path.join(root,filename)) or not is_generic_ignored(filename):
+						mylist.write(os.path.join(root,filename) + '\n')
 
-def is_specifically_ignored(directory):
-	for dir in specific_ignores:
-		if os.path.samefile(dir, directory):
+def is_specifically_ignored(node_in_question):
+	for node in specific_ignores:
+		if os.path.samefile(node, node_in_question):
 			return True
 	return False
 
