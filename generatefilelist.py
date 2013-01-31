@@ -59,15 +59,19 @@ def backup_current_list():
 	thepast = 0
 	regenerate = True
 	if os.path.isfile(current_filelist):
-		if args.days_old != 0:
+		if int(args.days_old) != 0:
 			thepast = now - 60*60*24*int(args.days_old)
-		elif args.hours_old != 0:
+		elif int(args.hours_old) != 0:
 			thepast = now - 60*60*int(args.hours_old)
 
 		if thepast != 0:
-			if (os.path.getmtime(current_filelist) > thepast):
+			stat = os.stat(current_filelist)
+			if stat.st_mtime > thepast:
 				regenerate = False
-				print "Not generating new file because the file list is newer than " + args.days_old + " days."
+				if int(args.days_old) != 0:
+					print "Not generating new file because the file list is newer than " + args.days_old + " day(s)."
+				elif int(args.hours_old) != 0:
+					print "Not generating new file because the file list is newer than " + args.hours_old + " hour(s)."
 		if regenerate:
 			if os.path.isfile(old_filelist):
 				print "Removing old file..."
