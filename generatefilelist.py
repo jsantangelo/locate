@@ -1,12 +1,15 @@
 #!/usr/bin/python
 
 import os
+import time
 import argparse
 import ConfigParser
 
 parser = argparse.ArgumentParser(description="Generates a file list.")
-#parser.add_argument("--if",dest="days_old",default="0",metavar="[days old]",
-#	help='generate only if current list is older than this many days')
+parser.add_argument("-d",dest="days_old",default="0",metavar="[days old]",
+	help='generate only if current list is older than this many days')
+# parser.add_argument("-h",dest="hours_old",default="0",metavar="[hours old]",
+# 	help='generate only if current list is older than this many hours')
 args = parser.parse_args()
 
 configfile = "locate.cfg"
@@ -46,20 +49,25 @@ def parse_configuration():
 
 		current_filelist = os.path.join(filelist_dir,"all.files")
 		old_filelist = os.path.join(filelist_dir,"all.files.old")
-
-		print current_filelist
 	else:
 		print "No config file found!"
 
 #Clear out old filelist
 def backup_current_list():
-	if os.path.isfile(old_filelist):
-		print "Removing old file..."
-		os.remove(old_filelist)
-		
+	now = time.time()
+	seconds_ago = 0
 	if os.path.isfile(current_filelist):
-		print "Backing up current file list..."
-		os.rename(current_filelist, old_filelist)
+		if (args.days_old != 0):
+			seconds_ago = now - 60*60*24*int(args.days_old)
+			if (os.path.getmtime(current_filelist) < seconds_ago):
+				if os.path.isfile(old_filelist):
+					print "Removing old file..."
+					os.remove(old_filelist)
+				print "Backing up current file list..."
+				os.rename(current_filelist, old_filelist)
+				return True
+	print "Not generating new file because the file list is newer than " + args.days_old + " days."
+	return False
 
 #Create new filelist (empty file)
 def create_new_list():
@@ -97,6 +105,6 @@ def is_generic_ignored(directory):
 #not if it is imported
 if __name__ == "__main__":
 	parse_configuration()
-	backup_current_list()
-	create_new_list()
-	generate_list_content()
+	if backup_current_list():
+		if create_new_list():
+			generate_list_content()
