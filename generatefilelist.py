@@ -31,6 +31,7 @@ def parse_configuration():
 	global generic_ignores
 	global current_filelist
 	global old_filelist
+	os.chdir(os.path.dirname(os.path.realpath(__file__)))
 	if os.path.isfile(configfile):
 		config.read(configfile)
 
@@ -58,16 +59,16 @@ def backup_current_list():
 	thepast = 0
 	regenerate = True
 	if os.path.isfile(current_filelist):
-		if (args.days_old != 0):
+		if args.days_old != 0:
 			thepast = now - 60*60*24*int(args.days_old)
-		elif (args.hours_old != 0):
+		elif args.hours_old != 0:
 			thepast = now - 60*60*int(args.hours_old)
 
-		if (thepast != 0):
+		if thepast != 0:
 			if (os.path.getmtime(current_filelist) > thepast):
 				regenerate = False
 				print "Not generating new file because the file list is newer than " + args.days_old + " days."
-		if (regenerate):		
+		if regenerate:
 			if os.path.isfile(old_filelist):
 				print "Removing old file..."
 				os.remove(old_filelist)
