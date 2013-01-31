@@ -8,8 +8,8 @@ import ConfigParser
 parser = argparse.ArgumentParser(description="Generates a file list.")
 parser.add_argument("-d",dest="days_old",default="0",metavar="[days old]",
 	help='generate only if current list is older than this many days')
-# parser.add_argument("-h",dest="hours_old",default="0",metavar="[hours old]",
-# 	help='generate only if current list is older than this many hours')
+parser.add_argument("-r",dest="hours_old",default="0",metavar="[hours old]",
+	help='generate only if current list is older than this many hours')
 args = parser.parse_args()
 
 configfile = "locate.cfg"
@@ -55,25 +55,32 @@ def parse_configuration():
 #Clear out old filelist
 def backup_current_list():
 	now = time.time()
-	seconds_ago = 0
+	thepast = 0
+	regenerate = True
 	if os.path.isfile(current_filelist):
 		if (args.days_old != 0):
-			seconds_ago = now - 60*60*24*int(args.days_old)
-			if (os.path.getmtime(current_filelist) < seconds_ago):
-				if os.path.isfile(old_filelist):
-					print "Removing old file..."
-					os.remove(old_filelist)
-				print "Backing up current file list..."
-				os.rename(current_filelist, old_filelist)
-				return True
-	print "Not generating new file because the file list is newer than " + args.days_old + " days."
-	return False
+			thepast = now - 60*60*24*int(args.days_old)
+		elif (args.hours_old != 0):
+			thepast = now - 60*60*int(args.hours_old)
+
+		if (thepast != 0):
+			if (os.path.getmtime(current_filelist) > thepast):
+				regenerate = False
+				print "Not generating new file because the file list is newer than " + args.days_old + " days."
+		if (regenerate):		
+			if os.path.isfile(old_filelist):
+				print "Removing old file..."
+				os.remove(old_filelist)
+			print "Backing up current file list..."
+			os.rename(current_filelist, old_filelist)
+	return regenerate
 
 #Create new filelist (empty file)
 def create_new_list():
 	print "Creating new file list..."
 	with file(current_filelist,'a'):
 		os.utime(current_filelist, None)
+	return True
 
 #Generate new file list contents
 def generate_list_content():
