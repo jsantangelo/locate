@@ -10,6 +10,8 @@ parser.add_argument("-d",dest="days_old",default="0",metavar="[days old]",
 	help='generate only if current list is older than this many days')
 parser.add_argument("-r",dest="hours_old",default="0",metavar="[hours old]",
 	help='generate only if current list is older than this many hours')
+parser.add_argument("--nolog",dest="log_option",action="store_true",
+	help='supresses all progress and error messages')
 args = parser.parse_args()
 
 configfile = "locate.cfg"
@@ -22,6 +24,11 @@ old_filelist = ""
 searchable_dirs = []
 specific_ignores = []
 generic_ignores = []
+
+#Print a message
+def log(message):
+	if not args.log_option:
+		print message
 
 #Read configuration file
 def parse_configuration():
@@ -51,7 +58,7 @@ def parse_configuration():
 		current_filelist = os.path.join(filelist_dir,"all.files")
 		old_filelist = os.path.join(filelist_dir,"all.files.old")
 	else:
-		print "No config file found!"
+		log("No config file found!")
 
 #Clear out old filelist
 def backup_current_list():
@@ -69,20 +76,20 @@ def backup_current_list():
 			if stat.st_mtime > thepast:
 				regenerate = False
 				if int(args.days_old) != 0:
-					print "Not generating new file because the file list is newer than " + args.days_old + " day(s)."
+					log("Not generating new file because the file list is newer than " + args.days_old + " day(s).")
 				elif int(args.hours_old) != 0:
-					print "Not generating new file because the file list is newer than " + args.hours_old + " hour(s)."
+					log("Not generating new file because the file list is newer than " + args.hours_old + " hour(s).")
 		if regenerate:
 			if os.path.isfile(old_filelist):
-				print "Removing old file..."
+				log("Removing old file...")
 				os.remove(old_filelist)
-			print "Backing up current file list..."
+			log("Backing up current file list...")
 			os.rename(current_filelist, old_filelist)
 	return regenerate
 
 #Create new filelist (empty file)
 def create_new_list():
-	print "Creating new file list..."
+	log("Creating new file list...")
 	with file(current_filelist,'a'):
 		os.utime(current_filelist, None)
 	return True
